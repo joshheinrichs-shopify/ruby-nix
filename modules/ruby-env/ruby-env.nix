@@ -17,7 +17,7 @@ let
   mkBinStubs = ''
     ${ruby}/bin/ruby ${./gen-bin-stubs.rb} \
       "${ruby}/bin/ruby" \
-      "$out/${ruby.gemPath}" \
+      "$out/${ruby.gemPath}:${ruby}/${ruby.gemPath}" \
       ${lib.escapeShellArg gempaths} \
       ${lib.escapeShellArg groups}
   '';
@@ -38,8 +38,7 @@ let
           mkdir -p $out/bin
           for i in ${ruby}/bin/*; do
             makeWrapper "$i" $out/bin/$(basename "$i") \
-              --set GEM_PATH ${rubyEnv}/${ruby.gemPath} \
-              --set GEM_HOME ${rubyEnv}/${ruby.gemPath}
+              --suffix GEM_PATH : ${rubyEnv}/${ruby.gemPath}:${ruby}/${ruby.gemPath}
           done
         '';
 

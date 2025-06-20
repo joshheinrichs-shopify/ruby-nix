@@ -29,7 +29,13 @@ gems.each do |path|
 # this file is here to facilitate running it.
 #
 
-Gem.paths = { 'GEM_HOME' => #{gem_path.dump} }
+gem_paths = ENV.fetch('GEM_PATH', '').split(':')
+gem_paths << #{gem_path.dump}
+Gem.paths = {
+  'GEM_PATH' => gem_paths.join(':'),
+}
+# bundler seems to ignore / override Gem.paths?? ok...
+ENV['GEM_PATH'] = gem_paths.join(':')
 require 'bundler'
 
 # Monkey-patch out the check that Bundler performs to determine
