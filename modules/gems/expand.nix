@@ -18,7 +18,7 @@ rec {
     attrs:
     let
       f = gemConfig.${attrs.gemName};
-      apply = (gemConfig ? ${attrs.gemName}) && attrs.compile;
+      apply = (gemConfig ? ${attrs.gemName}) && (!(attrs ? compile) || attrs.compile);
     in
     if apply then attrs // f attrs else attrs;
 
@@ -41,9 +41,8 @@ rec {
         document
         source
         ;
-      inherit (source) type compile;
 
-      buildInputs = if source.compile || !stdenv.isLinux then [ ] else [ autoPatchelfHook ];
+      buildInputs = if !(source ? compile) || source.compile || !stdenv.isLinux then [ ] else [ autoPatchelfHook ];
 
       dependencies = attrs.dependencies or [ ];
 
@@ -52,6 +51,8 @@ rec {
           "${attrs.version}-${source.target}"
         else
           attrs.version;
+    } // lib.optionalAttrs (source ? type) {
+      inherit (source) type;
     };
 
   # create all possible gems due to platform versions
@@ -66,7 +67,9 @@ rec {
     gemName: attrs:
     let
       sources =
-        if attrs.targets == [ ] then
+        if (attrs ? type) && attrs.type == "url" then
+          singleton (attrs.source)
+        else if attrs.targets == [ ] then
           singleton (attrs.source // { compile = true; })
         else
           map (a: a // { compile = false; }) attrs.targets;
