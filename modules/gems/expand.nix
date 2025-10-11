@@ -17,8 +17,9 @@ rec {
   applyConfig =
     attrs:
     let
-      f = gemConfig.${attrs.gemName};
-      apply = (gemConfig ? ${attrs.gemName}) && attrs.compile;
+      gemConfigName = if attrs.compile then attrs.gemName else "${attrs.gemName}-${attrs.source.target or "ruby"}";
+      f = gemConfig.${gemConfigName};
+      apply = gemConfig ? ${gemConfigName};
     in
     if apply then attrs // f attrs else attrs;
 
